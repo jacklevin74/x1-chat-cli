@@ -7,7 +7,6 @@ Send end-to-end encrypted messages via X1 Chat from the command line.
 
 import os
 import sys
-import json
 import hashlib
 import hmac
 import secrets
@@ -141,8 +140,8 @@ def main():
     # Compute shared secret
     shared_secret = compute_shared_secret(our_private, their_public)
     
-    # Encrypt message
-    plaintext = json.dumps({"text": message, "timestamp": int(__import__('time').time() * 1000)}).encode()
+    # Encrypt message (plain text, same as browser)
+    plaintext = message.encode('utf-8')
     nonce, ciphertext = encrypt_message(shared_secret, plaintext)
     print(f"✓ Message encrypted ({len(ciphertext)} bytes)")
     
