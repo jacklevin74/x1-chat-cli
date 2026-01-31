@@ -1,0 +1,26 @@
+{
+  "name": "x1-chat",
+  "version": "1.0.0",
+  "description": "Send and receive end-to-end encrypted messages via X1 Chat using a Solana wallet",
+  "author": "jacklevin74",
+  "license": "MIT",
+  "repository": "https://github.com/jacklevin74/x1-chat-cli",
+  "keywords": [
+    "x1",
+    "solana",
+    "encrypted",
+    "chat",
+    "messaging",
+    "e2e",
+    "wallet"
+  ],
+  "requires": {
+    "env": ["SOLANA_PRIVATE_KEY"],
+    "python": ">=3.10"
+  },
+  "scripts": {
+    "auth": "python3 x1_chat_auth.py",
+    "send": "python3 x1_chat_send.py",
+    "recv": "python3 x1_chat_recv.py"
+  }
+}

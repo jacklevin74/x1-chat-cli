@@ -1,91 +1,147 @@
-# X1 Chat CLI
+# X1 Chat CLI 🔐
 
-CLI tool to authenticate with [X1 Encrypted Chat](https://staging-vero.x1.xyz/xchat) using a Solana wallet — no browser or wallet extension required.
-
-## How It Works
-
-X1 Encrypted Chat uses wallet signatures to derive X25519 encryption keys for end-to-end encrypted messaging. This tool replicates the browser's authentication flow:
-
-1. **Sign** a message with your Solana wallet
-2. **Derive** X25519 keypair using HKDF-SHA256 (same algorithm as the browser)
-3. **Register** your encryption public key with the X1 Chat server
+CLI tool and agent skill for [X1 Encrypted Chat](https://staging-vero.x1.xyz/xchat) — send and receive end-to-end encrypted messages using a Solana wallet. No browser or wallet extension required.
 
 ## Installation
 
+### As an OpenClaw/ClawdHub Skill
 ```bash
+clawdhub install x1-chat
+```
+
+### Manual
+```bash
+git clone https://github.com/jacklevin74/x1-chat-cli
+cd x1-chat-cli
 pip install -r requirements.txt
 ```
 
-## Usage
+## Quick Start
 
-### Set your wallet key
-
+### 1. Set your wallet
 ```bash
 export SOLANA_PRIVATE_KEY="your_base58_private_key"
 ```
 
-### Authenticate
-
+### 2. Register with X1 Chat
 ```bash
-python x1_chat_auth.py
+python3 x1_chat_auth.py
 ```
 
-Example output:
-```
-◎ X1 Encrypted Chat CLI Authentication
-
-✓ Wallet: 2jchoLFVoxmJUcygc2cDfAqQb1yWUEjJihsw2ARbDRy3
-
-→ Signing: X1 Encrypted Messaging - Sign to generate your encryption keys
-✓ Signature: 4eLCr7gAtQiBe5KY...
-✓ X25519 Public Key: GvCGw1DKxv9UvbKy...
-
-→ Registering key with X1 Chat...
-✓ Successfully registered!
-
-  Address: 2jchoLFVoxmJUcygc2cDfAqQb1yWUEjJihsw2ARbDRy3
-  X25519 Key: GvCGw1DKxv9UvbKyMBQvUCWiPJzrVxJo447JUeCdgEVW
+### 3. Send a message
+```bash
+python3 x1_chat_send.py <recipient_address> "Hello from CLI!"
 ```
 
-### As a library
-
-```python
-from x1_chat_auth import authenticate
-
-# Using environment variable
-result = authenticate()
-
-# Or pass key directly
-result = authenticate(private_key_b58="your_key_here")
-
-print(result)
-# {
-#     "address": "2jcho...",
-#     "x25519PublicKey": "GvCGw...",
-#     "already_registered": False
-# }
+### 4. Receive messages
+```bash
+python3 x1_chat_recv.py [optional_sender_filter]
 ```
+
+## How It Works
+
+X1 Chat uses wallet signatures to derive encryption keys, enabling true end-to-end encryption:
+
+```
+┌─────────────────┐     ┌─────────────────┐
+│   Your Wallet   │     │  Their Wallet   │
+│   (Solana)      │     │   (Solana)      │
+└────────┬────────┘     └────────┬────────┘
+         │                       │
+    Sign Message            Sign Message
+         │                       │
+         ▼                       ▼
+┌─────────────────┐     ┌─────────────────┐
+│ X25519 Keypair  │     │ X25519 Keypair  │
+│ (HKDF-SHA256)   │     │ (HKDF-SHA256)   │
+└────────┬────────┘     └────────┬────────┘
+         │                       │
+         └───────────┬───────────┘
+                     │
+              ECDH Shared Secret
+                     │
+                     ▼
+            ┌─────────────────┐
+            │   AES-256-GCM   │
+            │   Encryption    │
+            └─────────────────┘
+```
+
+1. **Sign** → Wallet signs authentication message
+2. **Derive** → HKDF-SHA256 derives X25519 keypair from signature
+3. **Exchange** → ECDH computes shared secret with recipient
+4. **Encrypt** → AES-256-GCM encrypts message content
+5. **Send** → Only ciphertext reaches server (E2E)
+
+## Scripts
+
+| Script | Description |
+|--------|-------------|
+| `x1_chat_auth.py` | Register wallet with X1 Chat |
+| `x1_chat_send.py` | Send encrypted message |
+| `x1_chat_recv.py` | Receive and decrypt messages |
 
 ## API Endpoints
 
-The tool interacts with these X1 Chat API endpoints:
-
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| GET | `/xchat/api/keys/{address}` | Check if wallet is registered |
+| GET | `/xchat/api/keys/{address}` | Look up encryption key |
 | POST | `/xchat/api/keys` | Register encryption key |
+| POST | `/xchat/api/messages` | Send encrypted message |
+| GET | `/xchat/api/stream/{address}` | SSE stream for messages |
 
-## Security Notes
+## Environment Variables
 
-- **Never share your private key** — it controls your wallet and chat identity
-- The X25519 keypair is deterministically derived from your wallet signature
-- Same wallet + same message = same encryption keys (this is by design)
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `SOLANA_PRIVATE_KEY` | Yes | Base58-encoded Solana private key |
 
-## Technical Details
+## Example Session
 
-- **Key Derivation**: HKDF-SHA256 with domain separator `x1-msg-v1-x25519`
-- **Signing**: Ed25519 (Solana native)
-- **Encryption Keys**: X25519 (Curve25519)
+```
+$ python3 x1_chat_auth.py
+◎ X1 Encrypted Chat CLI Authentication
+
+✓ Wallet: 2jchoLFVoxmJUcygc2cDfAqQb1yWUEjJihsw2ARbDRy3
+→ Signing: X1 Encrypted Messaging - Sign to generate your encryption keys
+✓ Signature: 4eLCr7gAtQiBe5KY...
+✓ X25519 Public Key: GvCGw1DKxv9UvbKy...
+→ Registering key with X1 Chat...
+✓ Successfully registered!
+
+$ python3 x1_chat_send.py 24xes13jk7aYc93dfUAWpbnpyx8QFi4FLDNEUpUjofSN "Hey!"
+◎ X1 Encrypted Chat - Send Message
+
+✓ From: 2jchoLFVoxmJUcygc2cDfAqQb1yWUEjJihsw2ARbDRy3
+→ To: 24xes13jk7aYc93dfUAWpbnpyx8QFi4FLDNEUpUjofSN
+✓ Recipient key found
+✓ Message encrypted (20 bytes)
+✓ Message sent! ID: ml1m8snb9dts9721s77
+
+$ python3 x1_chat_recv.py
+◎ X1 Encrypted Chat - Receive Messages
+
+✓ Wallet: 2jchoLFVoxmJUcygc2cDfAqQb1yWUEjJihsw2ARbDRy3
+→ Polling for messages...
+
+==================================================
+← Received [24xes13j...ofSN]: Hey back!
+==================================================
+```
+
+## Use Cases
+
+- **Agent-to-Agent** — AI agents communicating over encrypted channels
+- **Wallet-to-Wallet** — Secure messaging between Solana addresses  
+- **Transaction Coordination** — Private discussion of trades/transfers
+- **CLI Integration** — Script automated encrypted messaging
+
+## Security
+
+- ✅ End-to-end encrypted (server cannot read messages)
+- ✅ Private keys never leave your machine
+- ✅ Deterministic key derivation (same wallet = same keys)
+- ✅ AES-256-GCM with unique nonce per message
 
 ## License
 
