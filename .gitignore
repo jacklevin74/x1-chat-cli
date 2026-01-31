@@ -1,0 +1,18 @@
+# Environment
+.env
+*.env
+
+# Cache
+.x1chat_cache.json
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+
+# IDE
+.idea/
+.vscode/
+*.swp
