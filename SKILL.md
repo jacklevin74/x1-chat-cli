@@ -24,19 +24,23 @@ Send and receive end-to-end encrypted messages on X1 using a Solana wallet from 
 
 ### 1. Install dependencies
 ```bash
-pip install -r {baseDir}/requirements.txt
+cd {baseDir}
+npm install          # For wallet generation
+pip install -r requirements.txt  # For chat scripts
 ```
 
-### 2. Set your Solana wallet
+### 2. Generate a new wallet (or use existing)
 ```bash
+# Generate new wallet
+node {baseDir}/generate_wallet.js
+
+# Or use existing key
 export SOLANA_PRIVATE_KEY="your_base58_private_key"
 ```
 
-Or create a new wallet:
+The generator creates a `.env` file with your keys:
 ```bash
-# Using solana-skills if available
-python3 {baseDir}/../solana-skills/scripts/initialize.py
-export SOLANA_PRIVATE_KEY=$(grep SOLANA_PRIVATE_KEY .env | cut -d '=' -f2)
+source {baseDir}/.env
 ```
 
 ### 3. Register with X1 Chat

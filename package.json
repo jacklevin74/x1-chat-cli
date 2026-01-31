@@ -1,0 +1,27 @@
+{
+  "name": "x1-chat-cli",
+  "version": "1.0.0",
+  "description": "CLI tool for X1 Encrypted Chat - send/receive E2E encrypted messages with Solana wallets",
+  "scripts": {
+    "wallet": "node generate_wallet.js",
+    "setup": "npm install && pip install -r requirements.txt"
+  },
+  "dependencies": {
+    "@solana/web3.js": "^1.98.0",
+    "bs58": "^5.0.0"
+  },
+  "keywords": [
+    "x1",
+    "solana",
+    "encrypted",
+    "chat",
+    "e2e",
+    "wallet"
+  ],
+  "author": "jacklevin74",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jacklevin74/x1-chat-cli"
+  }
+}
